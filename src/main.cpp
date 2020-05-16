@@ -5,7 +5,6 @@
 #include <cmath>
 #include <fstream>
 
-
 template<typename T, std::size_t N>
 struct CompileTimeArray {
 	constexpr explicit CompileTimeArray() : arr() {
@@ -31,7 +30,7 @@ struct T0
 
 	constexpr void init() {
 		constexpr double phi1 = 0;
-		constexpr double phi2 = M_PI * 2.;
+		constexpr double phi2 = M_2_PI * 2.;
 		constexpr double Phi[2] = {phi1, phi2};
 		constexpr double Tstart = 283.15;
 		for (int i = 0; i < num_phi_steps; ++i) {
@@ -230,10 +229,15 @@ template<int num_r_steps, int num_phi_steps>
 constexpr void start_solve( const int &rank, const int &num_pc, const double R[2], const double Phi[2], const double a,
                             const double dt ) {
 	double initial_temperature_matrix[num_r_steps * num_phi_steps];
-	init<num_r_steps, num_phi_steps>( initial_temperature_matrix );
 	float fTimeStart = 0;
-	if (rank == 0)
+	if (rank == 0) {
+		init<num_r_steps, num_phi_steps>( initial_temperature_matrix );
 		fTimeStart = clock() / (float) CLOCKS_PER_SEC;
+		MPI_Bcast( initial_temperature_matrix, num_r_steps * num_phi_steps, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+	} else {
+		MPI_Bcast( initial_temperature_matrix, num_r_steps * num_phi_steps, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
 	double dr = (R[1] - R[0]) / num_r_steps;
 
 	int num_r_steps_rank = num_r_steps / num_pc;
@@ -249,7 +253,7 @@ constexpr void start_solve( const int &rank, const int &num_pc, const double R[2
 	const int r_size = num_r_steps_rank;
 
 	int num_phi_steps_rank = num_phi_steps / num_pc;
-	double dphi = (Phi[1]) / num_phi_steps;
+	double dphi = (Phi[1] - Phi[0]) / num_phi_steps;
 	int startPhi = num_phi_steps_rank * rank;
 	int endPhi = startPhi + num_phi_steps_rank;
 
@@ -326,6 +330,7 @@ constexpr void start_solve( const int &rank, const int &num_pc, const double R[2
 	}
 }
 
+
 //-np 4 /home/mrkakorin/CLionProjects/task2/cmake-build-debug/build/task2
 int main( int argc, char **argv ) {
 	//float fTimeStart = clock() / (float)CLOCKS_PER_SEC;
@@ -335,7 +340,6 @@ int main( int argc, char **argv ) {
 	constexpr double phi2 = M_PI * 2.;
 	constexpr double R[2] = {R1, R2};
 	constexpr double Phi[2] = {phi1, phi2};
-
 
 	constexpr int num_r_steps = 240;
 	constexpr int num_phi_steps = 240;
