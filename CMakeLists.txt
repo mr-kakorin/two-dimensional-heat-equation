@@ -6,21 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE "Debug")
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-    if(MSVC)
-        if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-            string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-        endif()
-    elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 -Wall -Wno-long-long -pedantic")
-    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 -Wall -Wno-long-long -pedantic")
 else()
-    if(MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0 /Ox")
-    elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g0 -march=native -Os")
-    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g0 -march=native -Os")
 endif()
 
 find_package(MPI REQUIRED)
@@ -29,7 +17,7 @@ include_directories(${MPI_INCLUDE_PATH})
 
 aux_source_directory(src SRC)
 
-add_executable(${PROJECT_NAME} ${SRC} test/main.cpp test/CommonToolsTests.cpp src/CommonTools.h src/CommonTools.cpp)
+add_executable(${PROJECT_NAME} ${SRC})
 
 if(MPI_COMPILE_FLAGS)
     set_target_properties(${PROJECT_NAME} PROPERTIES

@@ -1,5 +1,3 @@
-project(${PROJECT_NAME}_test)
-
 configure_file(../cmake/CMakeLists.txt.in googletest-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
         RESULT_VARIABLE result
@@ -29,10 +27,10 @@ include_directories(${gtest_SOURCE_DIR}/include)
 
 file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)
 
-set(SOURCES ${TEST_SOURCES})
+set(SOURCES ${TEST_SOURCES} ../src/CommonTools.cpp)
 
-add_executable(${PROJECT_NAME} ${TEST_SOURCES})
+add_executable(${PROJECT_NAME}_test ${TEST_SOURCES})
 
-add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
+#add_test(NAME ${PROJECT_NAME}_test COMMAND ${PROJECT_NAME}_test)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC gtest gtest_main)
+target_link_libraries(${PROJECT_NAME}_test PUBLIC gtest gtest_main)
